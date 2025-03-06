@@ -5,7 +5,28 @@ import os
 import random
 
 # SIMULACIÓN DE REACTOR QUÍMICO
+def generar_datos_reactor():
+        # Valores aleatorios dentro de rangos razonables
+        tiempo_simulacion = random.uniform(1, 10)  # Entre 1 y 10 horas
+        temperatura_inicial = random.uniform(100, 200)  # Entre 100°C y 200°C
+        tasa_entrada_media = random.uniform(10, 20)  # Entre 10 y 20 L/min
+        tasa_entrada_desviacion = random.uniform(1, 5)  # Entre 1 y 5 L/min
+        eficiencia = random.uniform(0.8, 0.95)  # Entre 80% y 95%
+        capacidad_enfriamiento = random.uniform(1000, 2000)  # Entre 1000 y 2000 W/°C
+    
+        return tiempo_simulacion, temperatura_inicial, tasa_entrada_media, tasa_entrada_desviacion, eficiencia, capacidad_enfriamiento
 
+def generar_datos_tienda():
+        # Valores aleatorios dentro de rangos razonables
+        tiempo_simulacion = random.uniform(1, 8)  # Entre 1 y 8 horas
+        tasa_llegada = random.uniform(5, 15)  # Entre 5 y 15 clientes por hora
+        num_cajas = random.randint(1, 3)  # Entre 1 y 3 cajas
+        stock_inicial = random.randint(30, 100)  # Entre 30 y 100 unidades
+        umbral_reabastecimiento = random.randint(10, 20)  # Entre 10 y 20 unidades
+        lote_reabastecimiento = random.randint(30, 60)  # Entre 30 y 60 unidades
+        tiempo_reabastecimiento = random.uniform(10, 20)  # Entre 10 y 20 minutos
+    
+        return tiempo_simulacion, tasa_llegada, num_cajas, stock_inicial, umbral_reabastecimiento, lote_reabastecimiento, tiempo_reabastecimiento
 class Reactor:
     def __init__(self, temperatura_inicial, tasa_entrada_media, tasa_entrada_desviacion, eficiencia, capacidad_enfriamiento):
         self.temperatura = temperatura_inicial  # Temperatura inicial del reactor
@@ -21,6 +42,8 @@ class Reactor:
         self.temperatura_objetivo = 150  # Temperatura objetivo en °C
         self.rango_temperatura_optima = (145, 155)  # Rango de temperatura óptima
 
+ 
+    
     def calcular_calor_generado(self, tasa_entrada):
         # Mejora: Cálculo más realista del calor generado
         calor_especifico = 4.2  # kJ/kg·°C (aproximación para soluciones acuosas)
@@ -179,7 +202,7 @@ def simulacion_reactor(tiempo_simulacion, temperatura_inicial, tasa_entrada_medi
     plt.tight_layout()
     plt.show()
 
-def ejecutar_simulacion_reactor():
+def ejecutar_simulacion_reactor(automatico=False):
     limpiar_pantalla()
     print("=== Simulación de Reactor de Mezcla Continua ===")
     print("El reactor opera idealmente a 150°C con una eficiencia del 90%.")
@@ -188,12 +211,22 @@ def ejecutar_simulacion_reactor():
     print("=" * 50)
     
     try:
-        tiempo_simulacion = float(input("Duración de la simulación (en horas): "))
-        temperatura_inicial = float(input("Temperatura inicial del reactor (°C): "))
-        tasa_entrada_media = float(input("Tasa de entrada media de reactivos (L/min): "))
-        tasa_entrada_desviacion = float(input("Desviación estándar de la tasa de entrada (L/min): "))
-        eficiencia = float(input("Eficiencia de la reacción a 150°C (%): ")) / 100
-        capacidad_enfriamiento = float(input("Capacidad de enfriamiento del sistema (W/°C): "))
+        if automatico:
+            tiempo_simulacion, temperatura_inicial, tasa_entrada_media, tasa_entrada_desviacion, eficiencia, capacidad_enfriamiento = generar_datos_reactor()
+            print("Datos generados automáticamente:")
+            print(f"Tiempo de simulación: {tiempo_simulacion:.2f} horas")
+            print(f"Temperatura inicial: {temperatura_inicial:.2f} °C")
+            print(f"Tasa de entrada media: {tasa_entrada_media:.2f} L/min")
+            print(f"Desviación estándar de la tasa de entrada: {tasa_entrada_desviacion:.2f} L/min")
+            print(f"Eficiencia: {eficiencia * 100:.2f} %")
+            print(f"Capacidad de enfriamiento: {capacidad_enfriamiento:.2f} W/°C")
+        else:
+            tiempo_simulacion = float(input("Duración de la simulación (en horas): "))
+            temperatura_inicial = float(input("Temperatura inicial del reactor (°C): "))
+            tasa_entrada_media = float(input("Tasa de entrada media de reactivos (L/min): "))
+            tasa_entrada_desviacion = float(input("Desviación estándar de la tasa de entrada (L/min): "))
+            eficiencia = float(input("Eficiencia de la reacción a 150°C (%): ")) / 100
+            capacidad_enfriamiento = float(input("Capacidad de enfriamiento del sistema (W/°C): "))
 
         # Ejecutar la simulación
         simulacion_reactor(tiempo_simulacion, temperatura_inicial, tasa_entrada_media, tasa_entrada_desviacion, eficiencia, capacidad_enfriamiento)
@@ -207,6 +240,24 @@ def ejecutar_simulacion_reactor():
 
 # SIMULACIÓN DE TIENDA DE COMESTIBLES
 
+import numpy as np
+import simpy
+import random
+
+# Función para generar datos automáticos de la tienda
+def generar_datos_tienda():
+    # Valores aleatorios dentro de rangos razonables
+    tiempo_simulacion = random.uniform(1, 8)  # Entre 1 y 8 horas
+    tasa_llegada = random.uniform(5, 15)  # Entre 5 y 15 clientes por hora
+    num_cajas = random.randint(1, 3)  # Entre 1 y 3 cajas
+    stock_inicial = random.randint(30, 100)  # Entre 30 y 100 unidades
+    umbral_reabastecimiento = random.randint(10, 20)  # Entre 10 y 20 unidades
+    lote_reabastecimiento = random.randint(30, 60)  # Entre 30 y 60 unidades
+    tiempo_reabastecimiento = random.uniform(10, 20)  # Entre 10 y 20 minutos
+    
+    return tiempo_simulacion, tasa_llegada, num_cajas, stock_inicial, umbral_reabastecimiento, lote_reabastecimiento, tiempo_reabastecimiento
+
+# Clase para la simulación de la tienda
 class TiendaComestibles:
     def __init__(self, env, num_cajas, stock_inicial, umbral_reabastecimiento, lote_reabastecimiento, tiempo_reabastecimiento):
         self.env = env
@@ -257,18 +308,20 @@ class TiendaComestibles:
         self.reabastecimientos += 1
         print(f"Inventario reabastecido a las {self.env.now:.2f} minutos. Stock actual: {self.stock}")
 
+# Función para generar clientes
 def generar_clientes(env, tienda, tasa_llegada):
     cliente = 0
     while True:
-        yield env.timeout(np.random.exponential(60 / tasa_llegada))
+        yield env.timeout(np.random.exponential(60 / tasa_llegada))  # Tiempo entre llegadas en minutos
         cliente += 1
         env.process(tienda.atender_cliente(cliente))
 
+# Función principal de la simulación de la tienda
 def simulacion_tienda(tiempo_simulacion, tasa_llegada, num_cajas, stock_inicial, umbral_reabastecimiento, lote_reabastecimiento, tiempo_reabastecimiento):
     env = simpy.Environment()
     tienda = TiendaComestibles(env, num_cajas, stock_inicial, umbral_reabastecimiento, lote_reabastecimiento, tiempo_reabastecimiento)
     env.process(generar_clientes(env, tienda, tasa_llegada))
-    env.run(until=tiempo_simulacion)
+    env.run(until=tiempo_simulacion * 60)  # Convertir horas a minutos
 
     # Métricas
     tiempo_espera_promedio = np.mean(tienda.tiempos_espera) if tienda.tiempos_espera else 0
@@ -277,8 +330,8 @@ def simulacion_tienda(tiempo_simulacion, tasa_llegada, num_cajas, stock_inicial,
     porcentaje_sin_stock = (clientes_sin_stock / (tienda.clientes_atendidos + clientes_sin_stock)) * 100 if (tienda.clientes_atendidos + clientes_sin_stock) > 0 else 0
 
     # Cálculo de métricas adicionales
-    utilizacion_cajas = len(tienda.tiempos_espera) / tiempo_simulacion * 100 if tiempo_simulacion > 0 else 0
-    stock_por_hora = tienda.stock / (tiempo_simulacion / 60) if tiempo_simulacion > 0 else 0
+    utilizacion_cajas = (len(tienda.tiempos_espera) / (tiempo_simulacion * 60)) * 100 if tiempo_simulacion > 0 else 0
+    stock_por_hora = tienda.stock / tiempo_simulacion if tiempo_simulacion > 0 else 0
 
     print("\n--- Resultados de la Simulación ---")
     print(f"Tiempo de espera promedio: {tiempo_espera_promedio:.2f} minutos")
@@ -302,7 +355,7 @@ def simulacion_tienda(tiempo_simulacion, tasa_llegada, num_cajas, stock_inicial,
         print("Conclusión: Hay clientes que no pudieron ser atendidos por falta de stock.")
         print("Recomendación: Se recomienda ajustar el umbral de reabastecimiento o aumentar el tamaño del lote de reabastecimiento.")
         
-        if tienda.reabastecimientos > 10 and tiempo_simulacion <= 480:  # Más de 10 reabastecimientos en 8 horas o menos
+        if tienda.reabastecimientos > 10 and tiempo_simulacion <= 8:  # Más de 10 reabastecimientos en 8 horas o menos
             print("Recomendación adicional: El número de reabastecimientos es alto. Considere aumentar el tamaño del lote de reabastecimiento.")
         
         if tienda.veces_sin_stock > 5:
@@ -317,11 +370,9 @@ def simulacion_tienda(tiempo_simulacion, tasa_llegada, num_cajas, stock_inicial,
         print("Conclusión: La utilización de cajas es muy alta.")
         print("Recomendación: Considere aumentar el número de cajas para reducir tiempos de espera.")
 
-def ejecutar_simulacion_tienda():
-    limpiar_pantalla()
-    print("=" * 50)
-    print("     SIMULACIÓN DE TIENDA DE COMESTIBLES")
-    print("=" * 50)
+# Función para ejecutar la simulación de la tienda
+def ejecutar_simulacion_tienda(automatico=False):
+    print("=== Simulación de Tienda de Comestibles ===")
     print("Parámetros de la simulación:")
     print("- Los clientes llegan con una tasa promedio configurable")
     print("- El tiempo de servicio sigue una distribución exponencial con media de 5 minutos")
@@ -329,13 +380,24 @@ def ejecutar_simulacion_tienda():
     print("=" * 50)
     
     try:
-        tiempo_simulacion = float(input("Duración de la simulación (en horas): ")) * 60  # Convertir a minutos
-        tasa_llegada = float(input("Tasa de llegada de clientes (clientes por hora, recomendado 10): "))
-        num_cajas = int(input("Número de cajas de pago (recomendado 1): "))
-        stock_inicial = int(input("Stock inicial de productos (recomendado 50): "))
-        umbral_reabastecimiento = int(input("Umbral de reabastecimiento (recomendado 10): "))
-        lote_reabastecimiento = int(input("Tamaño del lote de reabastecimiento (recomendado 50): "))
-        tiempo_reabastecimiento = float(input("Tiempo de reabastecimiento (en minutos, recomendado 15): "))
+        if automatico:
+            tiempo_simulacion, tasa_llegada, num_cajas, stock_inicial, umbral_reabastecimiento, lote_reabastecimiento, tiempo_reabastecimiento = generar_datos_tienda()
+            print("Datos generados automáticamente:")
+            print(f"Tiempo de simulación: {tiempo_simulacion:.2f} horas")
+            print(f"Tasa de llegada: {tasa_llegada:.2f} clientes por hora")
+            print(f"Número de cajas: {num_cajas}")
+            print(f"Stock inicial: {stock_inicial} unidades")
+            print(f"Umbral de reabastecimiento: {umbral_reabastecimiento} unidades")
+            print(f"Lote de reabastecimiento: {lote_reabastecimiento} unidades")
+            print(f"Tiempo de reabastecimiento: {tiempo_reabastecimiento:.2f} minutos")
+        else:
+            tiempo_simulacion = float(input("Duración de la simulación (en horas): "))
+            tasa_llegada = float(input("Tasa de llegada de clientes (clientes por hora, recomendado 10): "))
+            num_cajas = int(input("Número de cajas de pago (recomendado 1): "))
+            stock_inicial = int(input("Stock inicial de productos (recomendado 50): "))
+            umbral_reabastecimiento = int(input("Umbral de reabastecimiento (recomendado 10): "))
+            lote_reabastecimiento = int(input("Tamaño del lote de reabastecimiento (recomendado 50): "))
+            tiempo_reabastecimiento = float(input("Tiempo de reabastecimiento (en minutos, recomendado 15): "))
         
         # Validación de entradas
         if tiempo_simulacion <= 0:
@@ -362,7 +424,7 @@ def ejecutar_simulacion_tienda():
         print(f"\nError inesperado: {e}")
     
     input("\nPresione Enter para volver al menú principal...")
-
+ 
 def limpiar_pantalla():
     os.system('cls' if os.name == 'nt' else 'clear')
 
@@ -374,16 +436,22 @@ def menu_principal():
         print("=" * 50)
         print("1. Simulación de Tienda de Comestibles")
         print("2. Simulación de Reactor de Mezcla Continua")
-        print("3. Salir")
+        print("3. Simulación de Tienda de Comestibles (Automático)")
+        print("4. Simulación de Reactor de Mezcla Continua (Automático)")
+        print("5. Salir")
         print("=" * 50)
         
-        opcion = input("Seleccione una opción (1-3): ")
+        opcion = input("Seleccione una opción (1-5): ")
         
         if opcion == "1":
             ejecutar_simulacion_tienda()
         elif opcion == "2":
             ejecutar_simulacion_reactor()
         elif opcion == "3":
+            ejecutar_simulacion_tienda(automatico=True)
+        elif opcion == "4":
+            ejecutar_simulacion_reactor(automatico=True)
+        elif opcion == "5":
             print("Gracias por usar el sistema de simulación. ¡Hasta pronto!")
             break
         else:
